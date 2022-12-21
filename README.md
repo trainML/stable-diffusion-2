@@ -7,12 +7,12 @@ This repository is a fork of [Stability-AI's Stable Diffusion Version 2](https:/
 Before beginning this example, ensure that you have satisfied the following prerequisites.
 
 - A valid [trainML account](https://auth.trainml.ai/login?response_type=code&client_id=536hafr05s8qj3ihgf707on4aq&redirect_uri=https://app.trainml.ai/auth/callback) with a non-zero [credit balance](https://docs.trainml.ai/reference/billing-credits/).
-- Local connection capability [prerequisites](https://docs.trainml.ai/reference/connection-capability/#prerequisites). _Note:_ There are additional methods to [create models](https://docs.trainml.ai/reference/models/#external-model-source) or [receive job outputs](https://docs.trainml.ai/reference/job-fields/#output-data) that do not require these prerequisites, but the commands would need to be modified to utilize them. [Contact us](mailto:support@trainml.ai) if you need any help adapting them.
+- Local connection capability [prerequisites](https://docs.trainml.ai/reference/connection-capability/#prerequisites). _Note:_ There are additional methods to [create models](https://docs.trainml.ai/reference/models/#external-model-source) or [receive job outputs](https://docs.trainml.ai/reference/job-fields/#output-data) that do not require these prerequisites, but the instructions would need to be modified to utilize them. [Contact us](mailto:support@trainml.ai) if you need any help adapting them.
 - The [trainML CLI/SDK](https://github.com/trainML/trainml-cli) installed and [configured](https://github.com/trainML/trainml-cli#authentication).
 
 ## Prepare the Model
 
-The first step is to create a [trainML Model](https://www.trainml.ai/models/) with all the models and checkpoints pre-downloaded. This way, the model only has to be uploaded a single time and can be reused for all subsequent jobs. Not only will this make jobs start much faster, but there are no compute charges for creating a model.
+The first step is to create a [trainML Model](https://www.trainml.ai/models/) with all the code, model weights, and checkpoints pre-downloaded. This way, the model only has to be uploaded a single time and can be reused for all subsequent jobs. Not only will this make jobs start much faster, but there are no [compute charges](https://docs.trainml.ai/reference/billing-credits/#charges) for creating a model.
 
 Start by cloning the repository:
 
@@ -31,7 +31,7 @@ source env/bin/activate
 pip install -r requirements.txt
 ```
 
-Next, download the model CLIP model that is a dependency of the stable diffusion model, using the `HUGGINGFACE_HUB_CACHE` environment variable to place the model file inside the project directory (instead of the default cache folder). Paste the following into the terminal in one shot:
+Next, download the CLIP model that is a dependency of the stable diffusion model. Use the `HUGGINGFACE_HUB_CACHE` environment variable to place the model file inside the project directory (instead of the default cache folder). Paste the following into the terminal in one shot:
 
 ```
 HUGGINGFACE_HUB_CACHE=$(pwd) python - << EOF
@@ -43,7 +43,7 @@ EOF
 
 This should create a folder called `models--laion--CLIP-ViT-H-14-laion2B-s32B-b79K` in the root of the project directory.
 
-Next, download the specific checkpoints you need for the application you plan to use in later steps. First, create the folders to store the checkpoints:
+Next, download the specific checkpoints you need for the application you plan to use in later steps. Create the folders to store the checkpoints:
 
 ```
 mkdir -p checkpoints midas_models
@@ -72,6 +72,7 @@ wget https://github.com/intel-isl/DPT/releases/download/1_0/dpt_hybrid-midas-501
 Once the weights are downloaded, create a trainML model using the following command from the root directory of the project:
 
 ```
+cd ..
 trainml model create "stable-diffusion-2" $(pwd)
 ```
 
@@ -102,7 +103,11 @@ trainml job create notebook "Stable Diffusion 2" \
 
 After a few minutes, the notebook window should open in your browser. If you created the notebook from the Notebook Dashboard, click the `Open` button once the notebook changes status to `running`.
 
-Once the [JupyterLab environment](https://jupyterlab.readthedocs.io/en/stable/) opens, you can inspect the `models` folder in the file browser to verify the model copied successfully or open a terminal window to begin running scripts.
+![notebook-first-open](assets/trainml/notebook-first-open.png)
+
+Once the [JupyterLab environment](https://jupyterlab.readthedocs.io/en/stable/) opens, you can inspect the `models` folder in the file browser to verify that the model copied successfully or open a terminal window to begin running scripts.
+
+![notebook-model-contents](assets/trainml/notebook-model-contents.png)
 
 > The following sections assume that your model was created with the [v2.1](https://huggingface.co/stabilityai/stable-diffusion-2-1) checkpoint. Ensure that the file named `v2-1_768-ema-pruned.ckpt` is inside the `checkpoints` directory before proceeding. If you use a different checkpoint file, you will need to manually update the checkpoint and config paths in the examples.
 
@@ -119,10 +124,15 @@ python scripts/txt2img.py \
 --n_iter 5 --n_samples 5 \
 --prompt "a professional photograph of an astronaut riding a horse"
 ```
+Modify the `prompt` to achieve the desired image results.
 
-Modify the `prompt` to achieve the desired image results. Each new prompt will create a new grid file in the `output` folder and new images in the `samples` subfolder and will not overwrite previous files. The total number of images generated per command is `n_iter` multiplied by `n_samples`. `n_iter` determines how many times sampling runs for each prompt and `n_samples` is how many images to pull from each iteration. In the resulting grid file, each iteration is a row, and each sample from each iteration is a column.
+![notebook-prompt-run](assets/trainml/notebook-prompt-run.png)
+
+Each new prompt will create a new grid file in the `output` folder and new images in the `samples` subfolder and will not overwrite previous files. The total number of images generated per command is `n_iter` multiplied by `n_samples`. `n_iter` determines how many times sampling runs for each prompt and `n_samples` is how many images to pull from each iteration. In the resulting grid file, each iteration is a row, and each sample from each iteration is a column.
 
 > `n_samples` is also the batch size, increasing this number above 6 can cause `CUDA out of memory` errors on an RTX 3090.
+
+![notebook-output-grid](assets/trainml/notebook-output-grid.png)
 
 For additional options when running the command type `python scripts/txt2img.py --help`.
 
@@ -232,7 +242,7 @@ trainml job create inference "Stable Diffusion 2 - Upscale Inference" \
 
 By default, the cli automatically attaches to the job and streams the job's log output. After a few minutes, the job will return. The generated images will be in the `outputs` folder of the current directory in a zip file named `Stable_Diffusion_2_-_Upscale_Inference.zip`. Unzip the file to see the results. Depending on the settings used for the prompt, each job should cost around $0.07-0.08.
 
-Similar to the text-to-image example, this can also be launch from a Python script:
+Similar to the text-to-image example, this can also be launched from a Python script:
 
 <pre><code>job = await trainml_client.jobs.create(
     "Stable Diffusion 2 - Inference",
@@ -287,17 +297,21 @@ The Stable Diffusion 2 repository also provides 3 specialized image-to-image che
 The syntax for the command is the following:
 
 ```
-python create_endpoint.py MODEL_ID --server-type [streamlit, gradio] --model-type [depth, upscaling, inpainting]
+python create_endpoint.py MODEL_ID \
+--server-type [streamlit, gradio] \
+--model-type [depth, upscaling, inpainting]
 ```
 
-`MODEL_ID` is the ID of the trainML model with the code repository and pre-downloaded checkpoints. You can find this by using the `trainml model list` command.
-`server-type` is the web server implementation to use. The Stable Diffusion 2 repository implemented all the servers in [gradio](https://www.gradio.app) and [streamlit](https://streamlit.io)
-`model-type` is the type of image modification demo to launch
+- `MODEL_ID` is the ID of the trainML model with the code repository and pre-downloaded checkpoints. You can find this by using the `trainml model list` command.
+- `server-type` is the web server implementation to use. The Stable Diffusion 2 repository implemented all the servers in [gradio](https://www.gradio.app) and [streamlit](https://streamlit.io)
+- `model-type` is the type of image modification demo to launch
 
 For example, to launch the `streamlit` version of the image upscaler on the model created in the original step (assuming the `x4-upscaler-ema.ckpt` checkpoint was downloaded), run the following:
 
 ```
-python create_endpoint.py $(trainml model list | grep stable-diffusion-2 | awk '{print $1}') --server-type streamlit --model-type upscaling
+python create_endpoint.py $(trainml model list | grep stable-diffusion-2 | awk '{print $1}') \
+--server-type streamlit \
+--model-type upscaling
 ```
 
 The script will automatically create the endpoint and open a web browser to the endpoint when it is ready. You can also find the link to the endpoint from the [Endpoint Dashboard](https://app.trainml.ai/jobs/endpoint) by clicking the `Connect` button. The URL is only available when the endpoint is running.

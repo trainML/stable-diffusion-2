@@ -52,7 +52,7 @@ cd checkpoints
 
 The following checkpoints are available from [Stability AI's on Hugging Face](https://huggingface.co/stabilityai). Although you can create a model with all available checkpoints, we recommend to use as few as necessary for any given model to save on storage costs, upload time, and job start time.
 
-- [v2.1](https://huggingface.co/stabilityai/stable-diffusion-2-1) - `wget https://huggingface.co/stabilityai/stable-diffusion-2-1/blob/main/v2-1_768-ema-pruned.ckpt`
+- [v2.1](https://huggingface.co/stabilityai/stable-diffusion-2-1) - `wget https://huggingface.co/stabilityai/stable-diffusion-2-1/resolve/main/v2-1_768-ema-pruned.ckpt`
 - [v2.1 Base](https://huggingface.co/stabilityai/stable-diffusion-2-1-base) - `wget https://huggingface.co/stabilityai/stable-diffusion-2-1-base/resolve/main/v2-1_512-ema-pruned.ckpt`
 - [v2.0](https://huggingface.co/stabilityai/stable-diffusion-2) - `wget https://huggingface.co/stabilityai/stable-diffusion-2/resolve/main/768-v-ema.ckpt`
 - [v2.0 Base](https://huggingface.co/stabilityai/stable-diffusion-2-base) - `wget https://huggingface.co/stabilityai/stable-diffusion-2-base/resolve/main/512-base-ema.ckpt`
